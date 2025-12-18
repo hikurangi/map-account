@@ -1,4 +1,4 @@
-use std::{error::Error, io, process};
+use std::{env, error::Error, ffi::OsString, io, process};
 
 use csv::{Reader, Writer};
 
@@ -16,7 +16,15 @@ fn main() {
     }
 }
 
+fn get_first_arg() -> Result<OsString, Box<dyn Error>> {
+    match env::args_os().nth(1) {
+        None => Err(From::from("expected 1 argument, but got none")),
+        Some(file_path) => Ok(file_path),
+    }
+}
+
 fn run() -> Result<(), Box<dyn Error>> {
+    let file_path = get_first_arg()?;
     // NOTE: can use ReaderBuilder for configuration, ie:
     // specifying that the file has no headers
 
@@ -27,8 +35,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     // TODO: from disk?
     let mut rdr = Reader::from_reader(io::stdin());
 
-    // TODO: to disk?
-    let mut wtr = Writer::from_writer(io::stdout()); // assuming it defaults with headers
+    let mut wtr = Writer::from_path(file_path)?;
 
     // 5. map ✅
     for result in rdr.deserialize::<types::input::RawKiwibankInputAccount>() {
@@ -38,11 +45,10 @@ fn run() -> Result<(), Box<dyn Error>> {
         let out_rec: types::output::RawKiwibankOutputAccount = in_rec.into();
         println!("{:?}", out_rec);
 
-        // wtr.serialize(out_rec)?;
+        // 6. output file (to disk) ✅ -> wtr.serialize just send the record to the writer's specified destination
+        wtr.serialize(out_rec)?;
     }
 
     wtr.flush()?;
     Ok(())
 }
-
-// 6. output file to disk
