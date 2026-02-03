@@ -40,10 +40,10 @@ fn run() -> Result<(), Box<dyn Error>> {
     // 5. map ✅
     for result in rdr.deserialize::<types::input::RawKiwibankInputAccount>() {
         let in_rec = result?;
-        println!("{:?}", in_rec);
+        // println!("{:?}", in_rec);
 
-        let out_rec: types::output::RawKiwibankOutputAccount = in_rec.into();
-        println!("{:?}", out_rec);
+        let out_rec: types::output::RawKiwibankOutputAccount = in_rec.try_into()?;
+        // println!("{:?}", out_rec);
 
         // 6. output file (to disk) ✅ -> wtr.serialize just send the record to the writer's specified destination
         wtr.serialize(out_rec)?;

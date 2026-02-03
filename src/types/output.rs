@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use serde::Serialize;
 
 use crate::types::input::RawKiwibankInputAccount;
@@ -53,8 +54,10 @@ pub struct RawKiwibankOutputAccount {
     balance: String,
 }
 
-impl From<RawKiwibankInputAccount> for RawKiwibankOutputAccount {
-    fn from(
+impl TryFrom<RawKiwibankInputAccount> for RawKiwibankOutputAccount {
+    type Error = chrono::ParseError;
+
+    fn try_from(
         RawKiwibankInputAccount {
             account_number,
             effective_date,
@@ -72,10 +75,17 @@ impl From<RawKiwibankInputAccount> for RawKiwibankOutputAccount {
             amount,
             balance,
         }: RawKiwibankInputAccount,
-    ) -> Self {
-        Self {
+    ) -> Result<Self, Self::Error> {
+        const NEW_FORMAT: &str = "%Y-%m-%d";
+        const OLD_FORMAT: &str = "%d-%m-%Y";
+
+        let date = NaiveDate::parse_from_str(&effective_date, NEW_FORMAT)?
+            .format(OLD_FORMAT)
+            .to_string();
+
+        Ok(Self {
             account_number,
-            date: effective_date,
+            date,
             memo_description: description,
             source_code_payment_type: transaction_code,
             tp_ref: reference,
@@ -90,6 +100,6 @@ impl From<RawKiwibankInputAccount> for RawKiwibankOutputAccount {
             amount_debit: String::new(),
             amount,
             balance,
-        }
+        })
     }
 }
