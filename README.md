@@ -17,7 +17,7 @@ cargo build
 ```
 
 3. **Run the script**.
-It's unfinished and only runs in debug mode, so from the project root, use the following command.
+It's unfinished and only runs in debug mode, so from the project root, use the following command, with your own appropriate substitutions (`output-file-name.csv`, `full-input-file-path.csv`).
 ```bash
 ./target/debug/map-account ./output-file-name.csv < full-input-file-path.csv
 ```
